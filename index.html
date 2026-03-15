@@ -295,7 +295,7 @@ Tu sei il Commissario Foscari, incaricato dall'Avvocato Gentile — il notaio �
       <span class="s-label">Obiettivi del Commissario</span>
       <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">🔍</div><div><div style="font-size:14px;color:var(--text)">Esamina tutte le prove sulla scena</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Ogni reperto appartiene a una catena — trovare la catena è trovare l'assassino</div></div></div>
       <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">💬</div><div><div style="font-size:14px;color:var(--text)">Interroga tutti e sei gli indiziati</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Le contraddizioni non vengono segnalate — emergono dal confronto con le prove</div></div></div>
-      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">🔗</div><div><div style="font-size:14px;color:var(--text)">Collega le catene A, B, C, D</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Usa il quaderno nella sezione Indizi per annotare le connessioni</div></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">🔗</div><div><div style="font-size:14px;color:var(--text)">Collega le catene A, B, C, D</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Annota mentalmente le connessioni — ogni catena da sola è ambigua, insieme sono schiaccianti</div></div></div>
       <div style="display:flex;gap:14px;align-items:flex-start"><div style="font-size:20px;min-width:28px">⚖️</div><div><div style="font-size:14px;color:var(--text)">Formula la tua accusa</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Solo quando le catene convergono su un unico nome</div></div></div>
     </div>
   </div>
@@ -858,7 +858,7 @@ function openSuspect(id) {
     <div class="card">
       <span class="s-label">Interrogatorio</span>
       <div class="topics-row">
-        ${s.statements.map(st=>`<button class="topic-btn" data-topic="${st.topic}" onclick="selTopic('${s.id}','${st.topic}')">${st.topic}</button>`).join('')}
+        ${s.statements.map(st=>`<button class="topic-btn" data-sid="${s.id}" data-topic="${st.topic}" onclick="selTopic(this.dataset.sid, this.dataset.topic)">${st.topic}</button>`).join('')}
       </div>
       <div class="stmt-box" id="stmt-box"></div>
     </div>`;
