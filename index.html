@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'Eredità di Palazzo Serafini</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0905; --bg-card: #100e09; --bg-mid: #16130d; --bg-light: #1e1a12;
+    --border: #2a2418; --border-gold: #7a5c20;
+    --gold: #c9963a; --gold-light: #e8bc6a; --gold-dim: #6a4e1a;
+    --text: #d8ccb4; --text-mid: #a89870; --text-dim: #5a5040;
+    --red: #a83030; --red-light: #d06060; --red-dim: #200808;
+    --green: #3a7a4a; --green-dim: #081408; --ink: #1a1510;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Courier Prime', monospace; min-height: 100vh; background-image: radial-gradient(ellipse at 20% 20%, rgba(201,150,58,0.03) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(168,48,48,0.03) 0%, transparent 50%); }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.5; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+
+  /* MUSIC */
+  #music-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: rgba(10,9,5,0.97); border-top: 1px solid var(--border-gold); padding: 8px 24px; display: flex; align-items: center; gap: 14px; backdrop-filter: blur(12px); }
+  .music-label { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; white-space: nowrap; }
+  #music-toggle { background: transparent; border: 1px solid var(--border-gold); color: var(--gold); padding: 5px 12px; border-radius: 2px; cursor: pointer; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 1px; transition: all 0.2s; white-space: nowrap; }
+  #music-toggle:hover { background: rgba(201,150,58,0.1); }
+  #music-toggle:disabled { opacity: 0.35; cursor: default; }
+  #music-volume { -webkit-appearance: none; width: 80px; height: 2px; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
+  #music-volume::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); cursor: pointer; }
+  #music-status { font-size: 10px; color: var(--text-dim); font-style: italic; }
+  #music-error { font-size: 10px; color: #c06060; display: none; font-style: italic; }
+
+  /* TOPBAR */
+  #topbar { position: sticky; top: 0; z-index: 100; background: rgba(10,9,5,0.96); border-bottom: 1px solid var(--border-gold); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); }
+  .stamp-top { font-size: 9px; letter-spacing: 4px; color: var(--text-dim); margin-bottom: 5px; text-transform: uppercase; }
+  .title-top { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold-light); font-style: italic; }
+  .meta-top { text-align: right; font-size: 11px; color: var(--text-dim); line-height: 1.8; }
+  #acc-badge { color: var(--red-light); font-size: 11px; letter-spacing: 1px; display: none; }
+
+  /* LAYOUT */
+  #app { max-width: 880px; margin: 0 auto; padding: 36px 24px 80px; }
+
+  /* TABS */
+  #tabbar { display: flex; gap: 3px; background: var(--bg-mid); border: 1px solid var(--border); border-radius: 4px; padding: 4px; margin-bottom: 32px; flex-wrap: wrap; }
+  .tab-btn { flex: 1; min-width: 90px; padding: 9px 12px; background: transparent; color: var(--text-dim); border: none; border-radius: 3px; cursor: pointer; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 1px; transition: all 0.2s; text-transform: uppercase; white-space: nowrap; }
+  .tab-btn:hover { color: var(--text-mid); background: var(--bg-light); }
+  .tab-btn.active { background: var(--gold); color: var(--ink); font-weight: bold; }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeUp 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* CARDS */
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 24px; margin-bottom: 16px; }
+  .card.gold { border-color: var(--border-gold); }
+  .s-label { font-size: 9px; letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; display: block; }
+  .s-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--gold); font-style: italic; margin-bottom: 6px; }
+  .s-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 24px; line-height: 1.7; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 2px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; background: rgba(201,150,58,0.12); border: 1px solid rgba(201,150,58,0.25); color: var(--gold); }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; margin-top: 6px; }
+
+  /* HERO */
+  .hero { background: linear-gradient(135deg, #100e07, #0d0b06); border: 1px solid var(--border-gold); border-radius: 6px; padding: 36px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .hero::before { content: '⚖'; position: absolute; top: -10px; right: 10px; font-size: 130px; opacity: 0.04; pointer-events: none; line-height: 1; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--gold-light); font-style: italic; line-height: 1.3; margin: 12px 0 8px; }
+  .hero-sub { font-size: 11px; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 24px; }
+  .vgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .vbox { background: var(--bg-mid); border-radius: 4px; padding: 16px; }
+  .vbox .lbl { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 8px; }
+  .vbox .val { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  /* TIMELINE */
+  .tl { position: relative; padding-left: 24px; }
+  .tl::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+  .tl-row { display: flex; gap: 16px; margin-bottom: 16px; position: relative; }
+  .tl-dot { position: absolute; left: -24px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--border-gold); border: 2px solid var(--bg); }
+  .tl-time { min-width: 48px; font-size: 11px; color: var(--gold); }
+  .tl-ev { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+
+  /* CHAIN GUIDE */
+  .chain-guide { background: #0d0c08; border: 1px solid var(--border); border-left: 3px solid var(--border-gold); border-radius: 4px; padding: 18px; margin-bottom: 16px; }
+  .cg-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+  .cg-row:last-child { margin-bottom: 0; }
+  .cg-letter { min-width: 22px; height: 22px; border-radius: 50%; background: rgba(201,150,58,0.12); border: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--gold); flex-shrink: 0; }
+  .cg-text { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+
+  /* CLUES */
+  .clues-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+  .clue-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 16px; cursor: pointer; transition: all 0.2s; position: relative; }
+  .clue-card:hover { border-color: var(--border-gold); background: var(--bg-light); }
+  .clue-card.revealed { background: #120f08; border-color: rgba(122,92,32,0.5); }
+  .clue-card.selected { background: #1a1608; border-color: var(--gold); }
+  .clue-rdot { position: absolute; top: 9px; right: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: none; }
+  .clue-card.revealed .clue-rdot { display: block; }
+  .clue-icon { font-size: 28px; margin-bottom: 10px; }
+  .clue-name { font-size: 12px; color: var(--text-dim); line-height: 1.4; margin-bottom: 6px; }
+  .clue-card.revealed .clue-name { color: var(--text-mid); font-weight: bold; }
+  .clue-cat { font-size: 9px; letter-spacing: 1px; }
+  .chain-badge { display: inline-block; margin-top: 8px; padding: 1px 7px; border-radius: 2px; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; background: rgba(201,150,58,0.08); border: 1px solid rgba(201,150,58,0.2); color: var(--gold-dim); }
+  .clue-hint { font-size: 10px; color: var(--text-dim); margin-top: 8px; }
+
+  .clue-detail { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 4px; padding: 24px; margin-bottom: 24px; display: none; animation: fadeUp 0.25s ease; }
+  .clue-detail.visible { display: block; }
+  .cd-header { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
+  .cd-icon { font-size: 38px; }
+  .cd-title { font-family: 'Playfair Display', serif; font-size: 19px; color: var(--gold); font-style: italic; }
+  .cd-loc { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+  .cd-desc { border-left: 3px solid var(--border-gold); padding-left: 16px; margin-bottom: 16px; }
+  .cd-desc p { font-size: 14px; color: var(--text-mid); line-height: 1.9; }
+  .cd-note { background: #12100a; border-radius: 3px; padding: 14px; }
+  .cd-note p { font-size: 13px; color: var(--text); line-height: 1.9; font-style: italic; }
+
+  #notes-area { width: 100%; min-height: 130px; background: transparent; border: none; color: var(--text); font-family: 'Courier Prime', monospace; font-size: 13px; resize: vertical; outline: none; line-height: 2; caret-color: var(--gold); }
+
+  /* SUSPECTS */
+  .sg { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .sc { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px; cursor: pointer; transition: border-color 0.2s; }
+  .sc:hover { border-color: var(--border-gold); }
+  .sc-av { font-size: 34px; margin-bottom: 10px; }
+  .sc-name { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+  .sc-role { font-size: 9px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .sc-age { font-size: 12px; color: var(--text-dim); }
+
+  #suspect-detail { display: none; animation: fadeUp 0.25s ease; }
+  #suspect-detail.visible { display: block; }
+  .back-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 7px 16px; border-radius: 3px; cursor: pointer; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 1px; margin-bottom: 24px; text-transform: uppercase; transition: all 0.2s; }
+  .back-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .alibi-q { font-size: 14px; color: var(--text-mid); line-height: 1.85; font-style: italic; border-left: 3px solid var(--border); padding-left: 16px; margin-bottom: 16px; }
+  .holes-btn { padding: 8px 14px; border-radius: 3px; cursor: pointer; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+  .holes-btn.open { background: var(--red-dim); border-color: var(--red); color: var(--red-light); }
+  .holes-list { margin-top: 14px; display: none; animation: fadeUp 0.2s ease; }
+  .holes-list.visible { display: block; }
+  .hole-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; background: var(--red-dim); border: 1px solid rgba(168,48,48,0.2); border-radius: 3px; margin-bottom: 8px; }
+  .hole-item span { font-size: 13px; color: #c07070; line-height: 1.7; }
+  .topics-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .topic-btn { padding: 8px 14px; background: var(--bg-mid); color: var(--text-mid); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s; }
+  .topic-btn:hover { border-color: var(--border-gold); color: var(--text); }
+  .topic-btn.active { background: var(--gold); color: var(--ink); font-weight: bold; }
+  .stmt-box { border-top: 1px solid var(--border); padding-top: 18px; display: none; animation: fadeUp 0.2s ease; }
+  .stmt-box.visible { display: block; }
+  .stmt-q { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 14px; text-transform: uppercase; }
+  .stmt-text { border-left: 3px solid var(--border-gold); padding-left: 16px; font-size: 14px; color: var(--text); line-height: 2; font-style: italic; }
+
+  /* VERDICT */
+  .v-intro { background: #100d07; border: 1px solid var(--border-gold); border-radius: 4px; padding: 20px; margin-bottom: 24px; font-size: 13px; color: var(--text-mid); line-height: 1.85; font-style: italic; }
+  .vg { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .vc { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .vc:hover { border-color: var(--red); background: var(--red-dim); }
+  .vc-av { font-size: 34px; margin-bottom: 10px; }
+  .vc-name { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .vc-role { font-size: 10px; color: var(--text-dim); }
+  #vresult { display: none; animation: fadeUp 0.3s ease; }
+  #vresult.visible { display: block; }
+  .rbanner { border-radius: 4px; padding: 32px; text-align: center; margin-bottom: 20px; }
+  .rbanner.ok { background: var(--green-dim); border: 1px solid var(--green); }
+  .rbanner.fail { background: var(--red-dim); border: 1px solid var(--red); }
+  .ri { font-size: 56px; margin-bottom: 12px; }
+  .rt { font-family: 'Playfair Display', serif; font-size: 26px; font-style: italic; margin-bottom: 8px; }
+  .rbanner.ok .rt { color: #6aba6a; } .rbanner.fail .rt { color: #e07070; }
+  .rs { font-size: 14px; margin-bottom: 16px; }
+  .rbanner.ok .rs { color: #4a8a4a; } .rbanner.fail .rs { color: #a04040; }
+  .retry-btn { padding: 10px 24px; background: transparent; border: 1px solid var(--border); color: var(--text-dim); border-radius: 3px; cursor: pointer; font-family: 'Courier Prime', monospace; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; }
+  .retry-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .reveal-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--gold), #906020); color: var(--ink); border: none; border-radius: 4px; font-family: 'Playfair Display', serif; font-size: 16px; font-style: italic; cursor: pointer; margin-bottom: 20px; letter-spacing: 1px; transition: opacity 0.2s; }
+  .reveal-btn:hover { opacity: 0.9; }
+  #sol-panel { display: none; animation: fadeUp 0.3s ease; }
+  #sol-panel.visible { display: block; }
+  .ev-item { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .ev-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .ev-item span { font-size: 13px; color: var(--text); line-height: 1.7; }
+  .inn-item { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .inn-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .inn-item span { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+
+  /* VOICE AUDIO BUTTONS */
+  .voice-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid var(--border-gold);
+    color: var(--gold-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .voice-btn:hover { background: rgba(201,150,58,0.08); color: var(--gold); border-color: var(--gold); }
+  .voice-btn.playing { background: rgba(201,150,58,0.14); color: var(--gold-light); border-color: var(--gold); }
+  .voice-btn.error { opacity: 0.35; cursor: not-allowed; border-color: var(--red); color: var(--red-light); }
+  .voice-btn .vb-icon { font-size: 9px; }
+  .voice-btn .vb-wave { display: none; gap: 2px; align-items: center; }
+  .voice-btn.playing .vb-wave { display: flex; }
+  .voice-btn.playing .vb-icon-static { display: none; }
+  .vb-bar { width: 2px; background: var(--gold-light); border-radius: 1px; animation: waveAnim 0.7s ease-in-out infinite; }
+  .vb-bar:nth-child(1) { height: 6px; animation-delay: 0s; }
+  .vb-bar:nth-child(2) { height: 10px; animation-delay: 0.1s; }
+  .vb-bar:nth-child(3) { height: 7px; animation-delay: 0.2s; }
+  .vb-bar:nth-child(4) { height: 4px; animation-delay: 0.15s; }
+  @keyframes waveAnim { 0%,100% { transform: scaleY(0.5); } 50% { transform: scaleY(1.3); } }
+
+  .stmt-audio-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+
+  .plot-btn-wrap { margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(122,92,32,0.3); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .plot-label { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; }
+
+  @media (max-width: 600px) {
+    .clues-grid,.sg,.vg { grid-template-columns: 1fr 1fr; }
+    .vgrid { grid-template-columns: 1fr; }
+    #topbar { padding: 12px 16px; }
+    #app { padding: 20px 14px 80px; }
+    .hero { padding: 22px; }
+    .hero-title { font-size: 22px; }
+    #music-bar { gap: 8px; padding: 8px 12px; }
+    #music-volume { width: 55px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MUSIC PLAYER -->
+<div id="music-bar">
+  <div class="music-label">Atmosfera</div>
+  <button id="music-toggle" onclick="toggleMusic()">▶ Play</button>
+  <input type="range" id="music-volume" min="0" max="1" step="0.05" value="0.35" oninput="setVol(this.value)" title="Volume">
+  <div id="music-status" class="music-label" style="font-style:italic;letter-spacing:1px">background.mp3</div>
+  <div id="music-error">— posizionare background.mp3 nella stessa cartella del file HTML —</div>
+  <audio id="bg-audio" loop preload="auto"><source src="background.mp3" type="audio/mpeg"></audio>
+</div>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div>
+    <div class="stamp-top">Commissariato di Venezia — Archivio Riservato</div>
+    <div class="title-top">L'Eredità di Palazzo Serafini</div>
+  </div>
+  <div class="meta-top">
+    <div>Venezia, 3 febbraio 1962 — ore 02:14</div>
+    <div id="acc-badge">▶ Accusa formulata</div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="tabbar">
+    <button class="tab-btn active" data-tab="caso">📁 Il Caso</button>
+    <button class="tab-btn" data-tab="indizi" id="tab-indizi">🔍 Indizi (0/14)</button>
+    <button class="tab-btn" data-tab="indiziati">💬 Indiziati</button>
+    <button class="tab-btn" data-tab="verdetto">⚖ Verdetto</button>
+  </div>
+
+  <!-- CASO -->
+  <div class="panel active" id="panel-caso">
+    <div class="hero">
+      <span style="display:inline-block;border:2px solid var(--gold);color:var(--gold);font-size:9px;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:2px;transform:rotate(-2deg);opacity:0.85;margin-bottom:4px">Caso Aperto</span>
+      <h1 class="hero-title">L'Eredità di Palazzo Serafini</h1>
+      <div class="hero-sub">Venezia, 3 febbraio 1962 — ore 02:14</div>
+      <div class="vgrid">
+        <div class="vbox"><div class="lbl">Vittima</div><div class="val">Conte Aurelio Serafini, 78 anni</div></div>
+        <div class="vbox"><div class="lbl">Causa di morte</div><div class="val" style="font-size:12px;line-height:1.6;color:var(--text-mid)">Avvelenamento da arsenico disciolto nel vino — morte tra le 21:00 e le 23:30</div></div>
+      </div>
+      <p style="font-size:14px;color:var(--text-mid);line-height:2;white-space:pre-line">Il Conte Aurelio Serafini è stato trovato riverso sulla sua scrivania nel grande studio al secondo piano di Palazzo Serafini, affacciato sul Canal Grande. La porta era chiusa a chiave dall'interno — la chiave era nella tasca del vestito del Conte. La finestra sul retro era aperta di cinque centimetri, fissata da un fermo di ottone arrugginito.
+
+Il Conte aveva convocato quella sera sei persone per la lettura anticipata del suo testamento, prevista formalmente per il mattino seguente con il notaio. Nessuno sapeva perché avesse voluto fare questa lettura informale la sera prima. Ognuno degli invitati aveva accesso al palazzo. Ognuno aveva un motivo.
+
+Il vino nel calice del Conte — un Barolo del 1948, la sua bottiglia personale — conteneva una dose di arsenico sufficiente a uccidere un uomo in tre ore. La bottiglia era rimasta incustodita per circa quaranta minuti durante la cena. Il cuoco ha servito sette calici. Solo quello del Conte era avvelenato.
+
+Tu sei il Commissario Foscari, incaricato dall'Avvocato Gentile — il notaio — di risolvere il caso prima che la notizia si diffonda e che gli eredi fuggano da Venezia.</p>
+      <div class="plot-btn-wrap">
+        <span class="plot-label">Narrazione</span>
+        <button class="voice-btn" id="vbtn-plot" data-file="plot.mp3" data-label="plot.mp3" onclick="playVoice('plot.mp3','vbtn-plot')">
+          <span class="vb-icon-static vb-icon">▶</span>
+          <div class="vb-wave"><div class="vb-bar"></div><div class="vb-bar"></div><div class="vb-bar"></div><div class="vb-bar"></div></div>
+          <span>Ascolta il caso</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="s-label">Ricostruzione Cronologica</span>
+      <div class="tl" id="timeline"></div>
+    </div>
+
+    <div class="chain-guide">
+      <span class="s-label" style="margin-bottom:10px;color:var(--gold-dim)">Nota Metodologica — Commissario Foscari</span>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.8;margin-bottom:14px;font-style:italic">"Un indizio da solo non prova nulla. La verità emerge dalle catene — prove che si richiamano l'una con l'altra, silenziose quanto bastano per passare inosservate."</p>
+      <div class="cg-row"><div class="cg-letter">A</div><div class="cg-text">Il profumo — una sostanza volatile che lascia tracce in luoghi distinti</div></div>
+      <div class="cg-row"><div class="cg-letter">B</div><div class="cg-text">Il numero — un frammento che trova il suo complemento altrove, e un'iniziale che ha più di un proprietario</div></div>
+      <div class="cg-row"><div class="cg-letter">C</div><div class="cg-text">La geografia degli alibi — dove qualcuno afferma di essere, contro dove le prove lo collocano</div></div>
+      <div class="cg-row"><div class="cg-letter">D</div><div class="cg-text">La bottiglia — cosa è stato aggiunto, quando, e chi conosceva abbastanza bene il palazzo per farlo</div></div>
+    </div>
+
+    <div class="card">
+      <span class="s-label">Obiettivi del Commissario</span>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">🔍</div><div><div style="font-size:14px;color:var(--text)">Esamina tutte le prove sulla scena</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Ogni reperto appartiene a una catena — trovare la catena è trovare l'assassino</div></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">💬</div><div><div style="font-size:14px;color:var(--text)">Interroga tutti e sei gli indiziati</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Le contraddizioni non vengono segnalate — emergono dal confronto con le prove</div></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)"><div style="font-size:20px;min-width:28px">🔗</div><div><div style="font-size:14px;color:var(--text)">Collega le catene A, B, C, D</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Usa il quaderno nella sezione Indizi per annotare le connessioni</div></div></div>
+      <div style="display:flex;gap:14px;align-items:flex-start"><div style="font-size:20px;min-width:28px">⚖️</div><div><div style="font-size:14px;color:var(--text)">Formula la tua accusa</div><div style="font-size:11px;color:var(--text-dim);margin-top:3px">Solo quando le catene convergono su un unico nome</div></div></div>
+    </div>
+  </div>
+
+  <!-- INDIZI -->
+  <div class="panel" id="panel-indizi">
+    <div class="s-title">Prove Sulla Scena</div>
+    <div class="s-sub">Esamina ogni reperto. I reperti appartenenti alla stessa catena condividono la lettera in basso. Una prova sola è ambigua — la combinazione è tutto.</div>
+    <div class="clues-grid" id="clues-grid"></div>
+    <div class="clue-detail" id="clue-detail"></div>
+  </div>
+
+  <!-- INDIZIATI -->
+  <div class="panel" id="panel-indiziati">
+    <div id="suspects-list">
+      <div class="s-title">Gli Indiziati</div>
+      <div class="s-sub">Seleziona un indiziato per interrogarlo. Le contraddizioni non vengono segnalate.</div>
+      <div class="sg" id="suspects-grid"></div>
+    </div>
+    <div id="suspect-detail"></div>
+  </div>
+
+  <!-- VERDETTO -->
+  <div class="panel" id="panel-verdetto">
+    <div class="s-title">Il Verdetto</div>
+    <div class="s-sub">Hai esaminato le prove. Hai ascoltato le testimonianze. Ora devi decidere.</div>
+    <div id="vchoose">
+      <div class="v-intro">Commissario Foscari — l'Avvocato Gentile è in attesa. Gli eredi non possono restare a Venezia oltre stamane. Il medico legale ha confermato: omicidio. Ora serve un nome.</div>
+      <div class="vg" id="verdict-grid"></div>
+    </div>
+    <div id="vresult">
+      <div class="rbanner" id="rbanner">
+        <div class="ri" id="ri"></div>
+        <div class="rt" id="rt"></div>
+        <div class="rs" id="rs"></div>
+        <button class="retry-btn" id="retry-btn" onclick="resetVerdict()" style="display:none">← Ricomincia l'indagine</button>
+      </div>
+      <button class="reveal-btn" id="reveal-btn" onclick="revealSol()">Rivela la Soluzione Completa del Caso</button>
+      <div id="sol-panel">
+        <div class="card gold" style="margin-bottom:16px">
+          <span class="s-label" style="color:var(--gold)">La Colpevole</span>
+          <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
+            <div style="font-size:44px">👩</div>
+            <div>
+              <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);font-style:italic">Viola Serafini</div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Nipote — erede del palazzo</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <span class="s-label">Le Quattro Catene — Come Convergono</span>
+          <div id="chains-sol"></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <span class="s-label">Ricostruzione dei Fatti</span>
+          <p id="recon-txt" style="font-size:13px;color:var(--text-mid);line-height:2;white-space:pre-line"></p>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <span class="s-label" style="color:var(--gold)">Prove Determinanti</span>
+          <div id="key-ev"></div>
+        </div>
+        <div class="card">
+          <span class="s-label">Perché gli Altri Sono Innocenti</span>
+          <div id="inn-notes"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TIMELINE = [
+  {time:"18:30",ev:"Gli ospiti arrivano a Palazzo Serafini. Il Conte li accoglie nel salone."},
+  {time:"19:15",ev:"Cena formale nella sala da pranzo. Il vino viene versato. Il Conte brinda."},
+  {time:"19:50",ev:"Il Conte si ritira nello studio. Gli ospiti restano nel salone e in biblioteca."},
+  {time:"20:00",ev:"Il maggiordomo accende il camino in biblioteca su richiesta di Viola."},
+  {time:"20:30",ev:"Il maggiordomo porta una seconda bottiglia nel salone per gli ospiti."},
+  {time:"21:10",ev:"Si sentono voci animate provenire dallo studio del Conte. Nessuno ammette di esserci stato."},
+  {time:"21:45",ev:"La cameriera porta una tisana allo studio. Bussa, nessuna risposta. Non insiste."},
+  {time:"22:30",ev:"Uno degli ospiti chiede del Conte. Il maggiordomo bussa. Silenzio."},
+  {time:"23:50",ev:"Il maggiordomo forza la porta con l'aiuto del giardiniere. Il Conte è morto."},
+];
+
+const CC = {chimica:"#c06060", fisico:"#5090d0", documentale:"#60a060"};
+const CL = {chimica:"Chimica / Tossicologia", fisico:"Fisica / Tracce", documentale:"Documentale"};
+
+const CLUES = [
+  {
+    id:"guanto", icon:"🧤", name:"Guanto Sinistro di Seta Grigia", chain:"A",
+    location:"Dietro il calorifero — corridoio secondo piano, ala est",
+    category:"fisico",
+    description:"Un guanto sinistro di seta grigia scivolato tra la parete e il calorifero del corridoio al secondo piano — il corridoio che conduce allo studio del Conte. Taglia piccola, nessun monogramma, nessuna etichetta. Un profumo tenue ma persistente: acqua di rose.",
+    detail:"Il reperto non ha caratteristiche che ne identifichino da solo il proprietario. Ciò che conta è dove si trova. Il corridoio del secondo piano conduce unicamente allo studio del Conte e alle camere da letto degli ospiti. Da sola, questa prova è irrilevante. Combinata con le dichiarazioni degli ospiti riguardo ai loro movimenti serali, diventa qualcosa di molto diverso."
+  },
+  {
+    id:"bicchiere", icon:"🥃", name:"Bicchiere di Cognac non Toccato", chain:"A",
+    location:"Mensola del camino — studio del Conte",
+    category:"fisico",
+    description:"Un bicchiere di cognac quasi pieno, appoggiato sul bordo del camino dello studio. Mai toccato — il liquido è intatto, senza l'impronta di labbra. Il cognac proviene dalla bottiglia privata del Conte, non da quella disponibile nel salone. Il Conte non beveva alcolici forti per via del cuore; questa abitudine era nota solo alle persone più vicine alla famiglia.",
+    detail:"Chi ha portato quel bicchiere conosceva la posizione delle riserve private. Conosceva il palazzo dall'interno. Il bicchiere non è necessariamente una prova di crimine: potrebbe essere stato offerto durante una conversazione cordiale. Ma avvicinate il naso al bordo: un profumo floreale lievissimo — acqua di rose — che non appartiene al cognac. Lo stesso profumo rilevato sul guanto nel corridoio."
+  },
+  {
+    id:"biglietto", icon:"📝", name:"Biglietto Anonimo", chain:"A",
+    location:"Sotto il piatto del Conte — tavolo da pranzo",
+    category:"documentale",
+    description:"Un biglietto piegato in quattro, trovato sotto il piatto del Conte durante il riordino del tavolo. Scritto a stampatello con matita su carta comune — la stessa matita trovata sulla scrivania del Conte. Il testo: 'Stasera non bere il vino. C'è chi vuole farti del male. Fidati solo di chi ha perso tutto per colpa tua.' Grafologicamente, la stampatello è compatibile con la mano del Conte — deliberatamente anonimizzata.",
+    detail:"Il Conte ha scritto lui stesso questo biglietto come test di lealtà, nascondendolo sotto il proprio piatto prima della cena. Voleva osservare se qualcuno lo avesse trovato e rimosso — rivelando così di sapere dell'avvelenamento. Il biglietto è ancora al suo posto: o nessuno l'ha trovato, oppure chi l'ha trovato l'ha rimesso esattamente dov'era. La carta ha assorbito un lieve profumo di acqua di rose — lo stesso dei due reperti precedenti. Qualcuno ha sollevato il piatto, ha letto il biglietto, lo ha ripiegato e rimesso in posizione. Poi ha bevuto comunque. Non era un avvertimento per l'assassino — era una trappola. La trappola è scattata, ma nessuno ha fermato niente."
+  },
+  {
+    id:"cartina", icon:"⚗️", name:"Frammento di Carta Cerata", chain:"B",
+    location:"Ceneri del camino — biblioteca",
+    category:"chimica",
+    description:"Nelle ceneri del camino della biblioteca — acceso dal maggiordomo intorno alle 20:00 — è stato recuperato un frammento di carta cerata farmaceutica, del tipo usato per confezionare polveri. Non completamente combusto. Su un angolo sopravvissuto: '...412'. Polvere bianca nelle pieghe interne.",
+    detail:"Carta cerata farmaceutica: serve per contenere polveri fini, spesso medicinali. Il numero '412' è un frammento — plausibilmente parte di un codice ricevuta. La polvere bianca nelle pieghe è coerente con un composto minerale finemente macinato. Il fuoco era già acceso alle 20:00. Qualcuno ha aggiunto questo oggetto alle fiamme dopo quell'ora — intenzionalmente, ma in fretta. Il frammento sopravvissuto racconta quanto fosse fretta."
+  },
+  {
+    id:"ricevuta", icon:"💊", name:"Ricevuta Farmaceutica", chain:"B",
+    location:"Tasca interna di una giacca — ingresso del palazzo",
+    category:"documentale",
+    description:"Nella tasca interna di una giacca appesa all'ingresso — nessuno la rivendica esplicitamente. Fodera color tortora, bottoni in madreperla grigia. Farmacia Santa Margherita, 29 gennaio 1962: 'Solfato di arsenico — uso agricolo, 50g'. Numero ricevuta: 10412. Firma quasi illeggibile; iniziale: C.",
+    detail:"I numeri 10412 terminano con '412' — identici ai tre caratteri sul frammento bruciato in biblioteca. Non è una coincidenza. La fodera tortora e i bottoni in madreperla grigia della giacca sono coerenti con il guardaroba di Viola — il cui abito e le cui scarpe quella sera sono esattamente di quel colore. Ma chi è 'C'? Tra tutti gli ospiti quella sera, la lettera C non corrisponde a nessun nome di battesimo immediatamente riconoscibile. Vale la pena indagare se qualcuno abbia un secondo nome mai usato."
+  },
+  {
+    id:"agenda", icon:"📔", name:"Agenda del Conte", chain:"B",
+    location:"Scrivania — aperta sulla data del 3 febbraio",
+    category:"documentale",
+    description:"L'agenda personale del Conte era aperta. Colloqui privati pianificati per la serata: Renata (1°), Cesare (2°), Viola (3°), Don Alvise (4°), Giacomo (5°), Marchese (6°). Accanto a Renata e Cesare: una piccola 'X' a matita. Accanto a Don Alvise: un cerchio aperto. Accanto a Viola, Giacomo e al Marchese: nessun segno.",
+    detail:"La 'X' probabilmente indica un colloquio avvenuto. Il cerchio accanto a Don Alvise indica un colloquio ancora in sospeso. Ma il dettaglio più sottile è l'assenza di qualsiasi segno accanto al nome di Viola — né completato, né cancellato. Il Conte non ha avuto modo di aggiornare l'agenda, oppure qualcuno lo ha fatto al suo posto? Confrontate con la dichiarazione di Viola riguardo ai suoi movimenti quella sera."
+  },
+  {
+    id:"specchio", icon:"🪞", name:"Specchio Veneziano Spostato", chain:"C",
+    location:"Corridoio secondo piano, ala est — 6 metri dalla porta dello studio",
+    category:"fisico",
+    description:"Lo specchio veneziano nel corridoio del secondo piano è stato spostato di circa 28 centimetri rispetto alla sua posizione originale — rivelata da un alone di polvere sul pavimento. Nella nuova posizione, riflette la porta dello studio del Conte dal fondo del corridoio. Da lì, si può osservare chi entra ed esce dallo studio senza essere visti dall'interno.",
+    detail:"Chi ha spostato lo specchio voleva sorvegliare la porta dello studio rimanendo nell'ombra. Il maggiordomo afferma che lo specchio era al suo posto alle 17:00, quando ha pulito il piano. L'operazione è stata compiuta nel corso della serata. Non era curiosità passeggera — era una posizione di osservazione deliberata e prolungata."
+  },
+  {
+    id:"impronta", icon:"👠", name:"Impronta sul Parquet", chain:"C",
+    location:"Corridoio secondo piano — punto cieco davanti allo specchio",
+    category:"fisico",
+    description:"Una lieve compressione nel parquet antico, esattamente nel punto dal quale lo specchio spostato riflette la porta dello studio. La forma: il puntale di una scarpa femminile con tacco sottile e alto. Misura stimata: 36-37. La profondità della pressione è consistente con una permanenza prolungata — non un passaggio frettoloso.",
+    detail:"Qualcuno si è fermato in quel punto per parecchi minuti, immobile, a osservare. L'impronta è di una scarpa femminile sottile — incompatibile con le scarpe basse a tacco quadrato di Renata Foss. Tra le donne presenti quella sera, rimane una sola persona il cui tipo di calzatura corrisponde a questo profilo. Incrociare questo dato con le dichiarazioni sugli spostamenti serali."
+  },
+  {
+    id:"bottiglia", icon:"🍾", name:"La Bottiglia di Barolo", chain:"D",
+    location:"Credenza — sala da pranzo",
+    category:"chimica",
+    description:"La bottiglia personale del Conte — etichettata con lo stemma Serafini — era rimasta incustodita sulla credenza per circa 40 minuti durante la cena. Tenendo la bottiglia vuota controluce si nota, appena sotto il collo interno, una sottile pellicola oleosa iridescente. Non è compatibile con i residui naturali di un vino invecchiato.",
+    detail:"Quella pellicola è coerente con l'aggiunta di una sostanza veicolata da un eccipiente ceroso — un metodo usato per sciogliere polveri scarsamente solubili come i composti arsenicali. Chi ha aggiunto la sostanza conosceva questa tecnica, o aveva avuto istruzioni. La finestra di opportunità era di quaranta minuti — e chiunque si trovasse nel palazzo poteva approfittarne."
+  },
+  {
+    id:"calice", icon:"🍷", name:"Il Calice del Conte", chain:"D",
+    location:"Scrivania — studio del Conte",
+    category:"chimica",
+    description:"Il calice di cristallo del Conte conteneva residui di Barolo 1948 e un deposito cristallino sul fondo. Analisi: 'composto minerale finemente polverizzato, scarsamente solubile, coerente con un sale di arsenico.' Il deposito non è distribuito uniformemente: è concentrato su un lato, come se il liquido non fosse mai stato mescolato dopo l'aggiunta della sostanza.",
+    detail:"La distribuzione asimmetrica del deposito indica che la sostanza è stata aggiunta direttamente nel bicchiere già versato, o nella bottiglia senza agitare. L'arsenico triossido si scioglie lentamente nei liquidi freddi; senza mescolare rimane parzialmente in polvere. Chi lo ha aggiunto sapeva di avere poco tempo e non aveva la possibilità di attendere una dissoluzione completa. Era fretta — la stessa fretta che ha lasciato il frammento nel camino."
+  },
+  {
+    id:"testamento", icon:"📜", name:"Bozza del Testamento", chain:"D",
+    location:"Cassetto chiuso a chiave — scrivania del Conte",
+    category:"documentale",
+    description:"La bozza manoscritta del testamento, nel cassetto della scrivania (chiave nella tasca del Conte). Alla nipote Viola va il palazzo; a Cesare la collezione d'arte; a Renata Foss una rendita annua; alla Fondazione Moro il 30% del patrimonio liquido; a Giacomo Serafini — figlio illegittimo riconosciuto tre mesi prima — il 40% del patrimonio liquido.",
+    detail:"La bozza mostra due tipi di inchiostro: l'originale, nero-bruno, e uno viola-nero con cui sono stati aggiunti il nome di Giacomo e la clausola sul 40%. Data dell'ultima modifica: 1° febbraio. Il cassetto mostra una lieve abrasione sul bordo superiore — compatibile con una forzatura delicata con uno strumento a punta fine, del tipo di uno spillone da borsa. Qualcuno ha letto questo documento prima della sera del 3 febbraio."
+  },
+  {
+    id:"lettera", icon:"✉️", name:"Lettera Strappata", chain:null,
+    location:"Cestino — studio del Conte",
+    category:"documentale",
+    description:"Tre frammenti di lettera strappata, ricomposti: 'Aurelio — hai distrutto la mia famiglia e ora pretendi di essere generoso? Ogni cosa che possiedi è costruita sul sangue di mio padre. Domani mattina saprò la verità, e se è come temo, ti giuro che—'. Il quarto frammento manca.",
+    detail:"Calligrafia decisa, inclinata a sinistra — tipica di chi scrive con la mano destra ma ha un'innata tendenza sinistra. La carta ha una filigrana di Edizioni Moro, casa editrice di Cesare Serafini. L'inchiostro è viola-nero. Notate: è lo stesso tipo di inchiostro presente sulle correzioni della bozza del testamento. Ma questo non significa necessariamente che chi ha scritto la lettera abbia anche modificato il testamento — potrebbe essere una coincidenza, o potrebbe non esserlo."
+  },
+  {
+    id:"quadro", icon:"🖼️", name:"Ritratto di Famiglia Spostato", chain:null,
+    location:"Parete est — studio del Conte",
+    category:"fisico",
+    description:"Il grande ritratto di famiglia nella parete est dello studio è ruotato di alcuni gradi rispetto alla sua posizione abituale — lo rivela un segno di usura sul gancio, dove la cornice appoggia normalmente. Dietro il quadro: una cassaforte a muro. Chiusa. Il bordo inferiore della cornice presenta un alone di polvere sul lato sinistro, coerente con una mano che ha spinto il quadro verso destra per aprirlo.",
+    detail:"La cassaforte non è stata forzata — è stata aperta con la combinazione. Chi l'ha aperta conosceva sia l'esistenza della cassaforte, sia il codice. Tra gli ospiti, il Marchese Loredan era l'unico a cui il Conte avesse mostrato la cassaforte anni prima, come garanzia per un prestito. La mano sinistra che ha spinto il quadro: l'alone è compatibile con una persona che si avvicina dal lato destro della stanza — cioè dalla porta."
+  },
+  {
+    id:"registro_chiavi", icon:"🗝️", name:"Registro delle Chiavi del Palazzo", chain:"C",
+    location:"Cassetto del maggiordomo — piano terra",
+    category:"documentale",
+    description:"Un registro rilegato in tela blu, conservato nel cassetto del maggiordomo. Elenca ogni copia di chiave distribuita nel palazzo, con data e destinatario. Alla voce 'Studio privato — secondo piano': originale in possesso del Conte Serafini; copia n°1 consegnata a Renata Foss il 14 marzo 1948 — restituita e barrata il 2 giugno 1952; copia n°2 consegnata a Viola Serafini il 9 ottobre 1958 — nessuna restituzione annotata.",
+    detail:"La porta dello studio era chiusa a chiave dall'interno con la chiave originale trovata nella tasca del Conte. Per poter uscire e lasciare la porta chiusa dall'interno, l'assassino avrebbe dovuto disporre di una seconda chiave — con cui richiudere dall'esterno dopo essere uscito. Il registro indica che esiste una sola copia non restituita: quella consegnata a Viola nel 1958. Renata ha riconsegnato la propria quattro anni dopo averla ricevuta. Viola no."
+  },
+];
+
+const SUSPECTS = [
+  {
+    id:"viola", name:"Viola Serafini", age:34, role:"Nipote del Conte", avatar:"👩", audioName:"Viola",
+    appearance:"Alta, capelli scuri tagliati corti, occhi verdi chiari. Abito di seta grigia, con il solo guanto destro alla mano — il sinistro assente. Scarpe décolleté color tortora con tacco a spillo sottile, misura 37. Un profumo floreale discreto. Parla con voce controllata; le mani sono ferme, tranne quando le domande toccano il testamento o i movimenti serali.",
+    background:"Nipote diretta, figlia del figlio maggiore del Conte, morto in guerra. Vive al palazzo da dieci anni. Studia storia dell'arte a Firenze. Conosce ogni stanza, ogni abitudine, ogni segreto del palazzo come le proprie tasche.",
+    alibi:"Afferma di essere stata in biblioteca dalle 20:00 alle circa 22:00, poi di essere andata direttamente in camera sua. Sostiene di non aver incontrato il Conte in privato quella sera.",
+    alibi_holes:[
+      "Il maggiordomo non la ricorda in biblioteca dopo le 21:00 — e la porta della biblioteca è visibile dall'ingresso ogni volta che vi passava.",
+      "Indossa solo il guanto destro. Alla domanda sul guanto sinistro risponde di averlo perso 'durante la cena, al piano di sotto'.",
+      "Il Conte aveva pianificato un colloquio con lei quella sera (3° nell'agenda). Viola non fa menzione di averlo avuto né di averlo mancato."
+    ],
+    statements:[
+      {topic:"La sera", text:"Ho passato la serata in biblioteca — avevo bisogno di stare sola. Lo zio aveva i suoi colloqui e io i miei pensieri. Ho acceso il fuoco — il maggiordomo lo aveva già avviato, ma andava alimentato. Ho letto, mi sono assopita un po'. Verso le dieci mi sono alzata e sono salita in camera. Non ho visto lo zio dopo cena."},
+      {topic:"Il guanto", text:"L'ho perso durante la cena, credo quando ho aiutato il cameriere con un bicchiere che era caduto. Non ci ho fatto caso — ne ho altri paia identici a Firenze. È davvero rilevante per l'indagine?"},
+      {topic:"Il testamento", text:"Lo zio mi aveva promesso il palazzo da quando avevo vent'anni. È la mia casa, l'unica che conosca. Se ha cambiato idea su qualcosa — e credo di immaginare di cosa si tratti — avrei voluto saperlo direttamente da lui. Una spiegazione. Niente di più."},
+      {topic:"Giacomo", text:"Non sapevo della sua esistenza fino a sei settimane fa. Lo zio me lo aveva presentato come 'un parente lontano', e io ho capito subito che era qualcos'altro. Non ho niente di personale contro di lui — non è colpa sua. Ma capisce che è una situazione difficile da accettare senza preavviso."},
+      {topic:"Il secondo nome", text:"Chiara. Il mio secondo nome è Chiara. Non lo uso — non lo usa nessuno, da trent'anni. Mia madre insistette per quel nome ma non mi è mai piaciuto. Lo troverei anche nei documenti ufficiali, immagino. Perché lo chiede?"},
+    ]
+  },
+  {
+    id:"cesare", name:"Cesare Serafini", age:41, role:"Nipote del Conte", avatar:"👨", audioName:"Cesare",
+    appearance:"Corporatura robusta, capelli castani con qualche filo grigio. Completo scuro logoro ai polsini. Mani grandi con macchie di inchiostro scuro — viola-nero, visibili in particolare sul bordo del pollice destro. Fuma tenendo la sigaretta nella mano destra, sempre.",
+    background:"Figlio del fratello minore del Conte. Gestisce Edizioni Moro, fondata dal nonno. Debiti, affari poco chiari. Sa che il Conte lo tollera a malapena — e che la collezione d'arte è il suo unico aggancio a questa famiglia.",
+    alibi:"Afferma di essere rimasto nel salone tutta la sera con Don Alvise. Ammette un'assenza di 'cinque minuti' per andare in bagno intorno alle 21:00.",
+    alibi_holes:[
+      "Don Alvise stima l'assenza di Cesare in 'una ventina di minuti' — non cinque.",
+      "La lettera trovata nello studio usa carta con filigrana di Edizioni Moro. Cesare sostiene di non aver scritto nessuna lettera.",
+      "L'inchiostro viola-nero della lettera corrisponde esattamente al tipo visibile sulle sue dita quella sera."
+    ],
+    statements:[
+      {topic:"La sera", text:"Sono rimasto nel salone quasi tutta la sera con Don Alvise. A un certo punto mi sono alzato per il bagno — cinque minuti, forse dieci, non di più. Quando sono tornato il prete parlava ancora. Non sono salito al secondo piano."},
+      {topic:"La lettera", text:"Non ho scritto nessuna lettera allo zio. Se qualcuno ha usato carta della mia casa editrice, l'ha presa dalla mia borsa — l'avevo lasciata incustodita nell'ingresso. Chiunque avrebbe potuto farlo."},
+      {topic:"L'inchiostro", text:"Uso inchiostro viola-nero da vent'anni — è il solo che non sbava sui miei manoscritti. Non è un'esclusiva: si trova in qualunque cartolibreria di Venezia. Il fatto che lo usi non mi lega a nessuna lettera specifica."},
+      {topic:"Il testamento", text:"Merito quella collezione d'arte — ho lavorato su ogni pezzo per anni. Se mi ha tolto il patrimonio liquido per darlo a un uomo che ha riconosciuto tre mesi fa, è un insulto personale. Ma non avrei bisogno di ucciderlo — avrei contestato il testamento per vie legali e avrei aspettato."},
+      {topic:"Giacomo", text:"Non gli ho parlato tutta la sera. Non sapevo cosa dirgli. La sua presenza qui era già di per sé una risposta a domande che non avevo ancora formulato."},
+    ]
+  },
+  {
+    id:"renata", name:"Renata Foss", age:58, role:"Segretaria personale del Conte", avatar:"👩‍💼", audioName:"Renata",
+    appearance:"Austera, capelli grigi in un nodo preciso, abito scuro senza ornamenti. Scarpe basse a tacco quadrato, solide, da lavoro. Occhi penetranti. Risponde con un'esattezza quasi scomoda — mai una parola in più, mai una in meno. Non porta profumo.",
+    background:"Al servizio del Conte da trent'anni. Conosce ogni segreto, ogni conto, ogni menzogna. Il testamento la cita in modo insolito: 'Renata sa tutto sul 1934.' Una nota che potrebbe valere moltissimo.",
+    alibi:"Afferma di aver lavorato nello studio al piano terra fino alle 23:00, poi di essere andata a dormire. Il maggiordomo la conferma parzialmente — l'ha vista entrare alle 20:15.",
+    alibi_holes:[
+      "Lo studio al piano terra ha una porta secondaria sul giardino — il maggiordomo non ha visto Renata uscire né rientrare.",
+      "Ha accesso illimitato al palazzo, incluse le riserve private di vino.",
+      "Dichiara esplicitamente di non usare profumi, citando un'irritazione cutanea. Questo dettaglio, offerto spontaneamente, merita attenzione."
+    ],
+    statements:[
+      {topic:"La sera", text:"Ho lavorato. Come sempre. Il Conte mi aveva chiesto di preparare cinque lettere per gli avvocati, da spedire dopo la lettura del testamento. Le ho finite verso le undici, poi sono andata a letto. Non ho visto nessuno dopo le otto e un quarto."},
+      {topic:"Il 1934", text:"Il 1934 riguarda questioni contabili della società di famiglia. Una ristrutturazione. Non è mio compito commentare il contenuto del testamento. Se il Conte ha scelto di citarmi, aveva le sue ragioni."},
+      {topic:"Il testamento", text:"L'ho trascritto io, su dettatura. La rendita che mi ha lasciato è generosa — più di quanto mi aspettassi, francamente. Non ho motivo di lagnarmi."},
+      {topic:"Il profumo", text:"Non uso profumi da trent'anni. L'acqua di rose mi provoca irritazione alla pelle — una sensibilità acquisita. Se ha trovato una traccia di acqua di rose da qualche parte, non viene da me."},
+      {topic:"Giacomo", text:"Ho avviato le pratiche di riconoscimento su incarico del Conte. È il figlio naturale di Aurelio e di una donna morta nel '45. Ho fatto il mio lavoro. Non aggiungo altro."},
+    ]
+  },
+  {
+    id:"giacomo", name:"Giacomo Serafini", age:32, role:"Figlio illegittimo del Conte", avatar:"👦", audioName:"Giacomo",
+    appearance:"Giovane dall'aria smarrita, vestiti semplici. Gli occhi hanno la forma di quelli del Conte nei ritratti giovanili. Parla piano, raramente guarda in faccia. Le scarpe hanno tracce di fango scuro quasi asciutto — diverso dalla terra del giardino del palazzo.",
+    background:"Cresciuto con la madre, morta nel 1955, credendo che il padre fosse un pescatore morto in guerra. Ha scoperto la verità sei mesi fa. Non ha chiesto denaro — ha chiesto solo di conoscere la verità.",
+    alibi:"Rimasto nel salone fino alle 21:30, poi ha 'camminato nel giardino sul retro' fino alle 22:30. Nessuno lo ha visto.",
+    alibi_holes:[
+      "Il fango sulle scarpe è di tipo lagunare — non corrisponde alla terra del giardino del palazzo.",
+      "Non ha menzionato spontaneamente come sia arrivato a Palazzo Serafini quella sera.",
+      "Il 'giardino sul retro' si affaccia sul canale secondario — è una zona isolata e buia, difficile da percorrere casualmente."
+    ],
+    statements:[
+      {topic:"La sera", text:"Mi sentivo fuori posto. Tutte quelle persone che sapevano chi ero — o pensavano di saperlo. Sono uscito nel giardino sul retro per prendere aria. Ho fumato. Camminato. Non ho prestato attenzione a dove mettevo i piedi."},
+      {topic:"Il fango", text:"Devo essere arrivato vicino al cancello sul fondamenta. È sempre aperto. Forse ho camminato fino al bordo dell'acqua — era buio, non ricordo bene dove mettevo i piedi."},
+      {topic:"L'arrivo", text:"Sono arrivato in barca. Una barca a noleggio da Mestre. Non volevo farmi vedere arrivare dall'ingresso principale — non sapevo come presentarmi. Ho ormeggiato al fondamenta sul retro. Mi vergognavo un poco, lo ammetto."},
+      {topic:"Il Conte", text:"L'ho incontrato tre volte. Era gentile ma formale — come se stesse firmando un contratto. 'Voglio fare la cosa giusta', mi ripeteva. Non so se gli importasse davvero di me o solo della sua coscienza."},
+      {topic:"L'eredità", text:"Non voglio i suoi soldi. Non l'ho cercato per questo. Voglio sapere chi era mio padre, chi era mia madre, perché ha fatto quello che ha fatto. Il denaro non mi restituisce trent'anni di menzogna."},
+    ]
+  },
+  {
+    id:"don_alvise", name:"Don Alvise Torretti", age:63, role:"Sacerdote — amico del Conte", avatar:"⛪", audioName:"DonAlvise",
+    appearance:"Corporatura robusta per un sacerdote, mani callose, sorriso aperto. Talare e scarpe da lavoro incongruenti. Parla molto, ride spesso — l'unico tra gli ospiti che sembra genuinamente addolorato, non spaventato.",
+    background:"Parroco a Castello. Amico del Conte da quarant'anni, da quando si erano incontrati durante la guerra. Gestisce fondi caritativi per conto del Conte da decenni. Conosce molti segreti — quelli che passano per confessione, e non solo.",
+    alibi:"Nel salone con Cesare fino alle 21:30, poi in cappella 'a pregare'. Il giardiniere lo ha visto uscire dalla cappella verso le 22:00 e rientrare in palazzo.",
+    alibi_holes:[
+      "L'agenda del Conte riporta un cerchio — non una X — accanto al suo nome: il colloquio privato era ancora in sospeso.",
+      "Il giardiniere lo ha visto uscire dalla cappella verso le 22:00, contrariamente alla sua dichiarazione di essere rimasto in preghiera.",
+      "Non ha spiegato spontaneamente dove sia andato dopo la cappella, e cosa abbia fatto prima di andare a letto."
+    ],
+    statements:[
+      {topic:"La sera", text:"Sono rimasto nel salone con Cesare, poi mi sono ritirato in cappella. Aurelio mi permetteva di usarla liberamente. Ho pregato per lui — con qualche ironia del destino, adesso che ci penso."},
+      {topic:"Le 22:00", text:"Ho sentito un rumore dal corridoio — credevo fosse il vento, o un servitore. Sono uscito a controllare. Ho percorso il corridoio, non ho visto niente di straordinario, sono rientrato. Non mi sembrava opportuno bussare allo studio a quell'ora. Avrei dovuto dirlo prima, capisco."},
+      {topic:"La donazione", text:"Ogni anno il Conte faceva una donazione alla parrocchia tramite me — senza burocrazia. Quest'anno la cifra era più grande del solito. Dovevamo discutere i dettagli, ma non ci siamo riusciti."},
+      {topic:"Cesare", text:"Cesare era agitato quella sera, più del solito. Si è alzato, è andato via — venti minuti, direi, non cinque come dice lui. È tornato con la faccia rossa. Non gli ho chiesto spiegazioni."},
+      {topic:"Il testamento", text:"So dell'esistenza di una fondazione. Aurelio la chiamava 'una restituzione dovuta'. Non conosco i dettagli finanziari — e non li voglio conoscere."},
+    ]
+  },
+  {
+    id:"marchese", name:"Marchese Ettore Loredan", age:55, role:"Collezionista d'arte — creditore del Conte", avatar:"🎩", audioName:"Marchese",
+    appearance:"Elegante, capelli bianchi pettinati all'indietro, baffi curati. Orologio d'oro. Scarpe di coccodrillo impeccabilmente pulite. Parla con la cadenza monocorde di chi è abituato ad essere ascoltato senza interruzioni.",
+    background:"Tra i più noti collezionisti d'arte veneziani. Ha prestato al Conte 80.000 lire due anni prima, senza documentazione ufficiale. Nell'agenda del Conte: 'Marchese — restituzione'. Era venuto per riscuotere.",
+    alibi:"Nel salone fino alle 22:00, poi una telefonata alla moglie, poi a letto.",
+    alibi_holes:[
+      "Il centralino del palazzo registra una sola telefonata uscente quella sera — alle 20:45, non alle 22:00 come dichiara.",
+      "Il quadro che nasconde la cassaforte dello studio risulta spostato di recente — e il Marchese era l'unico ospite a conoscerne l'esistenza.",
+      "Non spiega cos'ha fatto tra le 21:00 e quando è andato a dormire, lasciando un'ora abbondante non documentata."
+    ],
+    statements:[
+      {topic:"La sera", text:"Ho trascorso la serata nel salone. Ho telefonato a mia moglie verso le dieci — le dico sempre la buonanotte. Poi sono andato in camera. Ho dormito."},
+      {topic:"Il prestito", text:"Il Conte mi doveva del denaro. Un prestito informale tra gentiluomini. Sperava di restituirmi in questa occasione. Non ci siamo riusciti — vedrò con gli eredi."},
+      {topic:"La cassaforte", text:"Non so di nessuna cassaforte. I palazzi veneziani sono pieni di spazi nascosti — è architettura, non segreto."},
+      {topic:"Le 21:00", text:"Ero nel salone. Non ricordo ogni singolo momento della sera — non mi aspettavo di dover rendicontare ogni minuto."},
+      {topic:"Il quadro", text:"Ho guardato i quadri — sono un collezionista, guardo sempre i quadri. Non sono stato nello studio del Conte."},
+    ]
+  },
+];
+
+const SOLUTION = {
+  chains: [
+    {letter:"A", title:"Il Profumo", text:"Il guanto grigio sinistro (corridoio 2° piano), il bicchiere di cognac (studio), il biglietto anonimo (sotto il piatto) condividono lo stesso profumo: acqua di rose. Viola indossa acqua di rose — visibile fin dalla sua descrizione. Ma il guanto è trovato nel corridoio del 2° piano, non nella sala da pranzo dove Viola dichiara di averlo perso. Questa piccola bugia geografica, quasi inavvertita, la colloca fuori dal suo alibi e vicino alla porta dello studio."},
+    {letter:"B", title:"Il Numero", text:"Il frammento '...412' nella cartina bruciata in biblioteca + la ricevuta farmaceutica 10412 si completano perfettamente. La firma 'C' della ricevuta è il nodo: interrogando Viola sul secondo nome, si scopre che si chiama 'Chiara' — un nome che nessuno usa, mai menzionato spontaneamente. Ha acquistato l'arsenico usando questo nome come firma quasi anonima. Cesare usa inchiostro viola-nero ma scrive con la mano destra — la firma sulla ricevuta ha l'inclinazione di chi scrive normalmente con la mano destra fingendo un altro nome."},
+    {letter:"C", title:"La Geografia e la Chiave", text:"Lo specchio spostato + l'impronta del tacco a spillo misura 37 (scarpe di Viola, incompatibili con i tacchi quadrati di Renata) + il guanto trovato nello stesso corridoio: Viola non era in biblioteca alle 21:30, era al secondo piano a sorvegliare la porta dello studio. Il registro delle chiavi chiude il cerchio: esiste una sola copia non restituita della chiave dello studio — quella consegnata a Viola nel 1958. Senza di essa, nessuno poteva uscire dallo studio lasciando la porta chiusa dall'interno con la chiave originale nella tasca del Conte."},
+    {letter:"D", title:"La Bottiglia", text:"La pellicola oleosa nella bottiglia (eccipiente ceroso) + il deposito asimmetrico nel calice (aggiunta senza mescolare, in fretta) + i segni di forzatura sul cassetto del testamento (compatibili con uno spillone da borsa): Viola ha letto il testamento giorni prima, ha acquistato l'arsenico, ha avvelenato la bottiglia durante la cena approfittando dei 40 minuti incustoditi. La fretta è la firma invisibile — la stessa fretta del frammento di carta nel camino."},
+  ],
+  reconstruction: `Tre giorni prima della morte, Viola cercava nello studio del Conte un contratto assicurativo. Il cassetto della scrivania non era chiuso a chiave quel pomeriggio. Trovò la bozza del testamento. Lesse. Il palazzo rimaneva suo — ma il 40% del patrimonio liquido andava a Giacomo, un uomo che non conosceva.
+
+Non reagì subito. Pensò per due giorni. Il 29 gennaio si recò alla Farmacia Santa Margherita e acquistò arsenico ad uso agricolo usando il suo secondo nome, Chiara — un nome che nessuno usava. Firmò con una C volutamente illeggibile. Portò l'arsenico in borsa per quattro giorni, ripetendosi che non l'avrebbe mai usato.
+
+La sera del 3 febbraio, durante la cena, la bottiglia personale del Conte rimase sulla credenza senza sorveglianza per circa quaranta minuti. Viola, ancora guantata, si avvicinò alla credenza con la naturalezza di chi vive in quella casa da dieci anni, aprì la bottiglia, aggiunse la polvere. Non aveva tempo per aspettare una dissoluzione perfetta. Richiuse. Tornò al tavolo.
+
+Dopo cena, si recò in biblioteca. Il fuoco era già acceso da mezz'ora. Alimentò le fiamme — lo disse lei stessa senza essere interrogata — bruciando la cartina farmaceutica tra le ceneri. In fretta: un angolo sopravvisse. Poi notò che il guanto sinistro aveva assorbito una traccia bianca sul palmo. Lo sfilò e lo nascose dietro il calorifero del corridoio mentre saliva al secondo piano.
+
+Verso le 21:30 spostò lo specchio veneziano di ventotto centimetri verso sinistra e si fermò nel punto cieco del corridoio per osservare la porta dello studio. Rimase ferma diversi minuti. Il parquet antico registrò il peso.
+
+Poi entrò.
+
+Trovò il Conte debole sulla poltrona, il veleno già in azione. Gli offrì cognac dal mobile bar privato — lei non bevve. Lasciò il bicchiere sul camino. Non parlarono molto. Il Conte perse conoscenza.
+
+Viola sistemò il suo corpo alla scrivania. Rimise la chiave nella sua tasca. Uscì dallo studio con la copia della chiave che conservava da anni, consegnatale quando gestiva la corrispondenza dello zio. Chiuse la porta dall'esterno.
+
+Tornò in camera sua. Aspettò.`,
+  key_evidence: [
+    "Il guanto grigio trovato nel corridoio del 2° piano contraddice Viola, che afferma di averlo perso 'al piano di sotto durante la cena'. La sua posizione la colloca fisicamente fuori dall'alibi e nella zona di osservazione dello studio.",
+    "Il profumo di acqua di rose sul guanto, sul bicchiere di cognac e sul biglietto è coerente con il profumo di Viola. Il biglietto lo ha scritto il Conte come test — Viola lo ha trovato sotto il proprio piatto, letto e rimesso a posto, trasferendo il suo profumo sulla carta. Renata dichiara esplicitamente di non usare profumi da decenni.",
+    "La ricevuta farmaceutica 10412 (firma 'C') e il frammento '...412' nelle ceneri della biblioteca si completano. Il secondo nome di Viola è Chiara — rivelato solo se interrogata direttamente. Nessun altro ospite ha un nome o soprannome che inizia con C.",
+    "L'impronta del tacco nel corridoio del 2° piano: tacco a spillo sottile, misura 37. Viola porta décolleté con tacco a spillo misura 37. Renata porta scarpe basse a tacco quadrato — morfologicamente incompatibili con l'impronta. Il punto coincide esattamente con la posizione di osservazione dello specchio spostato.",
+    "Il registro delle chiavi del palazzo: esiste una sola copia non restituita della chiave dello studio — consegnata a Viola nel 1958. Senza questa copia, la porta non poteva essere chiusa dall'interno dopo che l'assassino era già uscito.",
+    "Il cassetto del testamento mostra segni di forzatura compatibili con uno spillone da borsa. Viola conosceva l'organizzazione dello studio meglio di chiunque altro — e aveva già aperto quel cassetto.",
+  ],
+  innocence_notes: [
+    "Cesare ha scritto la lettera con inchiostro viola-nero su carta di Edizioni Moro — ed è stato nello studio verso le 21:00, litigando con il Conte. Ma il Conte era ancora vivo quando è uscito. Tace perché non vuole ammettere il litigio, non perché sia colpevole.",
+    "Il Marchese ha recuperato dalla cassaforte un documento che provava un suo credito verso il Conte. Era nello studio quando il Conte era già privo di coscienza. È un testimone con le mani sporche di omissione — non di omicidio.",
+    "Giacomo è arrivato in barca da Mestre e ha ormeggiato al fondamenta sul retro. Il fango lagunare viene da lì. Nella barca c'era una lettera privata della madre che non vuole rivelare. Nient'altro.",
+    "Don Alvise ha incontrato il Conte verso le 22:00 senza capire quanto stesse male. Ha ricevuto una busta con istruzioni per la donazione. Tace per non essere coinvolto — la sua omissione è imbarazzo, non colpa.",
+    "Renata conosce il segreto del 1934 e ha aspettato trent'anni per una riparazione pubblica. Ma quella sera stava aspettando ancora — non ha agito. La sua irritazione cutanea da acqua di rose è un alibi involontario ma preciso.",
+  ],
+};
+
+// STATE
+let revealed=[], selClue=null, selSuspect=null, activeTopic=null, holes={}, accusation=null, musPlaying=false;
+
+// MUSIC
+const aud = document.getElementById('bg-audio');
+aud.volume = 0.35;
+aud.addEventListener('error', () => {
+  document.getElementById('music-error').style.display = 'block';
+  document.getElementById('music-status').style.display = 'none';
+  const t = document.getElementById('music-toggle');
+  t.disabled = true; t.style.opacity = '0.35';
+});
+function toggleMusic() {
+  if (musPlaying) {
+    aud.pause(); musPlaying = false;
+    document.getElementById('music-toggle').textContent = '▶ Play';
+  } else {
+    aud.play().then(() => {
+      musPlaying = true;
+      document.getElementById('music-toggle').textContent = '⏸ Pausa';
+    }).catch(() => {
+      document.getElementById('music-error').style.display = 'block';
+      document.getElementById('music-status').style.display = 'none';
+    });
+  }
+}
+function setVol(v) {
+  // Only update live volume if voice is not currently ducking the music
+  if (voiceAud.paused) aud.volume = parseFloat(v);
+  // If voice IS playing, the stored slider value is still used as restore target on end
+}
+
+// ── VOICE AUDIO ENGINE ──────────────────────
+const voiceAud = new Audio();
+let vCurrentFile = null;
+let vCurrentBtnId = null;
+const DUCK_VOLUME = 0.07;   // background volume while voice plays
+const FADE_STEPS = 20;
+const FADE_MS = 15;
+
+function fadeAudio(audioEl, targetVol, onDone) {
+  const startVol = audioEl.volume;
+  const diff = targetVol - startVol;
+  let step = 0;
+  clearInterval(audioEl._fadeTimer);
+  if (Math.abs(diff) < 0.01) { audioEl.volume = targetVol; if (onDone) onDone(); return; }
+  audioEl._fadeTimer = setInterval(() => {
+    step++;
+    audioEl.volume = Math.min(1, Math.max(0, startVol + diff * (step / FADE_STEPS)));
+    if (step >= FADE_STEPS) {
+      clearInterval(audioEl._fadeTimer);
+      audioEl.volume = targetVol;
+      if (onDone) onDone();
+    }
+  }, FADE_MS);
+}
+
+voiceAud.addEventListener('ended', () => {
+  if (vCurrentBtnId) setVoiceBtnState(vCurrentBtnId, 'idle');
+  vCurrentFile = null; vCurrentBtnId = null;
+  // Restore background music volume
+  const targetVol = parseFloat(document.getElementById('music-volume').value);
+  fadeAudio(aud, targetVol);
+});
+
+function playVoice(file, btnId) {
+  // Toggle off if same file is playing
+  if (vCurrentFile === file && !voiceAud.paused) {
+    voiceAud.pause(); voiceAud.currentTime = 0;
+    setVoiceBtnState(btnId, 'idle');
+    vCurrentFile = null; vCurrentBtnId = null;
+    const targetVol = parseFloat(document.getElementById('music-volume').value);
+    fadeAudio(aud, targetVol);
+    return;
+  }
+  // Stop whatever voice is currently playing
+  if (!voiceAud.paused) {
+    voiceAud.pause(); voiceAud.currentTime = 0;
+    if (vCurrentBtnId) setVoiceBtnState(vCurrentBtnId, 'idle');
+  }
+  // Reset plot button state if switching
+  const plotBtn = document.getElementById('vbtn-plot');
+  if (plotBtn && btnId !== 'vbtn-plot') setVoiceBtnState('vbtn-plot', 'idle');
+
+  voiceAud.src = file;
+  voiceAud.onerror = () => {
+    setVoiceBtnState(btnId, 'error');
+    const targetVol = parseFloat(document.getElementById('music-volume').value);
+    fadeAudio(aud, targetVol);
+  };
+  voiceAud.play()
+    .then(() => {
+      vCurrentFile = file; vCurrentBtnId = btnId;
+      setVoiceBtnState(btnId, 'playing');
+      // Duck background music
+      if (musPlaying) fadeAudio(aud, DUCK_VOLUME);
+    })
+    .catch(() => {
+      setVoiceBtnState(btnId, 'error');
+      const targetVol = parseFloat(document.getElementById('music-volume').value);
+      fadeAudio(aud, targetVol);
+    });
+}
+
+function setVoiceBtnState(btnId, state) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.classList.remove('playing', 'error');
+  const iconEl = btn.querySelector('.vb-icon-static');
+  if (state === 'playing') {
+    btn.classList.add('playing');
+    if (iconEl) iconEl.textContent = '⏹';
+  } else if (state === 'error') {
+    btn.classList.add('error');
+    btn.disabled = true;
+    if (iconEl) iconEl.textContent = '✗';
+    const span = btn.querySelector('span:last-child');
+    if (span) span.textContent = 'File non trovato';
+  } else {
+    if (iconEl) iconEl.textContent = '▶';
+  }
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', () => {
+  buildTL(); buildClues(); buildSuspects(); buildVerdictGrid(); buildSolution();
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+});
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+// TIMELINE
+function buildTL() {
+  document.getElementById('timeline').innerHTML = TIMELINE.map(t =>
+    `<div class="tl-row"><div class="tl-dot"></div><div class="tl-time">${t.time}</div><div class="tl-ev">${t.ev}</div></div>`).join('');
+}
+
+// CLUES
+function buildClues() {
+  document.getElementById('clues-grid').innerHTML = CLUES.map(c =>
+    `<div class="clue-card" id="cc-${c.id}" onclick="selClueF('${c.id}')">
+      <div class="clue-rdot"></div>
+      <div class="clue-icon">${c.icon}</div>
+      <div class="clue-name">${c.name}</div>
+      <div class="clue-cat" style="color:${CC[c.category]}99">${CL[c.category]}</div>
+      ${c.chain ? `<div class="chain-badge">Catena ${c.chain}</div>` : ''}
+      <div class="clue-hint">Clicca per esaminare</div>
+    </div>`).join('');
+}
+function selClueF(id) {
+  if (!revealed.includes(id)) { revealed.push(id); updateCount(); }
+  const card = document.getElementById('cc-' + id);
+  if (selClue === id) {
+    selClue = null; card.classList.remove('selected');
+    document.getElementById('clue-detail').classList.remove('visible'); return;
+  }
+  if (selClue) document.getElementById('cc-' + selClue)?.classList.remove('selected');
+  selClue = id;
+  document.querySelectorAll('.clue-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected','revealed');
+  const h = card.querySelector('.clue-hint'); if(h) h.style.display='none';
+  const c = CLUES.find(x => x.id === id);
+  const det = document.getElementById('clue-detail');
+  det.innerHTML = `
+    <div class="cd-header">
+      <div class="cd-icon">${c.icon}</div>
+      <div>
+        <div class="cd-title">${c.name}</div>
+        <div class="cd-loc">📍 ${c.location} · <span style="color:${CC[c.category]}">${CL[c.category]}</span>${c.chain?` · <span style="color:var(--gold-dim);font-size:10px">Catena ${c.chain}</span>`:''}</div>
+      </div>
+    </div>
+    <div class="cd-desc"><p>${c.description}</p></div>
+    <div class="cd-note"><span class="s-label">Note del Commissario</span><p>${c.detail}</p></div>`;
+  det.classList.add('visible');
+  det.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function updateCount() {
+  document.getElementById('tab-indizi').textContent = `🔍 Indizi (${revealed.length}/14)`;
+}
+
+// SUSPECTS
+function buildSuspects() {
+  document.getElementById('suspects-grid').innerHTML = SUSPECTS.map(s =>
+    `<div class="sc" onclick="openSuspect('${s.id}')">
+      <div class="sc-av">${s.avatar}</div>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-role">${s.role}</div>
+      <div class="sc-age">${s.age} anni</div>
+    </div>`).join('');
+}
+function openSuspect(id) {
+  selSuspect=id; activeTopic=null;
+  const s = SUSPECTS.find(x=>x.id===id);
+  document.getElementById('suspects-list').style.display='none';
+  const d = document.getElementById('suspect-detail');
+  d.innerHTML = `
+    <button class="back-btn" onclick="closeSuspect()">← Lista indiziati</button>
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div style="font-size:50px">${s.avatar}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap">
+            <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);font-style:italic;margin:0">${s.name}</h3>
+            <span class="tag">${s.role}</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-mid);font-style:italic;line-height:1.7;margin:0 0 10px">${s.appearance}</p>
+          <p style="font-size:13px;color:var(--text-dim);line-height:1.7;margin:0">${s.background}</p>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <span class="s-label">Alibi Dichiarato</span>
+      <div class="alibi-q">"${s.alibi}"</div>
+      <button class="holes-btn" id="hb-${s.id}" onclick="toggleH('${s.id}')">▼ Esamina incongruenze nell'alibi</button>
+      <div class="holes-list" id="hl-${s.id}">
+        ${s.alibi_holes.map(h=>`<div class="hole-item"><div class="dot" style="background:var(--red);flex-shrink:0"></div><span>${h}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <span class="s-label">Interrogatorio</span>
+      <div class="topics-row">
+        ${s.statements.map(st=>`<button class="topic-btn" data-topic="${st.topic}" onclick="selTopic('${s.id}','${st.topic}')">${st.topic}</button>`).join('')}
+      </div>
+      <div class="stmt-box" id="stmt-box"></div>
+    </div>`;
+  d.classList.add('visible');
+}
+function closeSuspect() {
+  selSuspect=null;
+  document.getElementById('suspects-list').style.display='block';
+  const d=document.getElementById('suspect-detail'); d.classList.remove('visible'); d.innerHTML='';
+}
+function toggleH(id) {
+  holes[id]=!holes[id];
+  document.getElementById('hl-'+id).classList.toggle('visible',holes[id]);
+  const b=document.getElementById('hb-'+id);
+  b.classList.toggle('open',holes[id]);
+  b.textContent=holes[id]?'▲ Nascondi incongruenze':"▼ Esamina incongruenze nell'alibi";
+}
+function selTopic(sid, topic) {
+  const s = SUSPECTS.find(x=>x.id===sid);
+  activeTopic = activeTopic===topic ? null : topic;
+  document.querySelectorAll('.topic-btn').forEach(b=>b.classList.toggle('active', b.dataset.topic===activeTopic));
+  const box = document.getElementById('stmt-box');
+  if (!activeTopic) { box.classList.remove('visible'); return; }
+  const stIdx = s.statements.findIndex(x=>x.topic===topic);
+  const st = s.statements[stIdx];
+  const file = `${s.audioName}${stIdx+1}.mp3`;
+  const btnId = `vbtn-${s.id}-${stIdx+1}`;
+  box.innerHTML = `
+    <div class="stmt-audio-row">
+      <span class="stmt-q" style="margin-bottom:0">Domanda: ${topic}</span>
+      <button class="voice-btn" id="${btnId}" data-file="${file}" data-label="${file}" onclick="playVoice('${file}','${btnId}')">
+        <span class="vb-icon-static vb-icon">▶</span>
+        <div class="vb-wave"><div class="vb-bar"></div><div class="vb-bar"></div><div class="vb-bar"></div><div class="vb-bar"></div></div>
+        <span>${file}</span>
+      </button>
+    </div>
+    <div class="stmt-text">"${st.text}"</div>`;
+  box.classList.add('visible');
+}
+
+// VERDICT
+function buildVerdictGrid() {
+  document.getElementById('verdict-grid').innerHTML = SUSPECTS.map(s =>
+    `<div class="vc" onclick="makeAcc('${s.id}')">
+      <div class="vc-av">${s.avatar}</div>
+      <div class="vc-name">${s.name}</div>
+      <div class="vc-role">${s.role}</div>
+    </div>`).join('');
+}
+function makeAcc(id) {
+  accusation=id;
+  document.getElementById('acc-badge').style.display='block';
+  document.getElementById('vchoose').style.display='none';
+  const ok=id==='viola';
+  const accused=SUSPECTS.find(s=>s.id===id);
+  document.getElementById('rbanner').className='rbanner '+(ok?'ok':'fail');
+  document.getElementById('ri').textContent=ok?'⚖️':'✗';
+  document.getElementById('rt').textContent=ok?'Caso Risolto.':'Accusa Errata.';
+  document.getElementById('rs').textContent=ok?'La sua analisi è impeccabile, Commissario. Venezia deve ringraziarla.':`${accused.name} è innocente. Ha accusato la persona sbagliata.`;
+  if(!ok) document.getElementById('retry-btn').style.display='inline-block';
+  document.getElementById('vresult').classList.add('visible');
+}
+function resetVerdict() {
+  accusation=null;
+  document.getElementById('acc-badge').style.display='none';
+  document.getElementById('vchoose').style.display='block';
+  document.getElementById('vresult').classList.remove('visible');
+  document.getElementById('sol-panel').classList.remove('visible');
+  document.getElementById('reveal-btn').style.display='block';
+  document.getElementById('retry-btn').style.display='none';
+}
+function revealSol() {
+  document.getElementById('reveal-btn').style.display='none';
+  document.getElementById('sol-panel').classList.add('visible');
+}
+function buildSolution() {
+  document.getElementById('chains-sol').innerHTML = SOLUTION.chains.map(c =>
+    `<div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div style="min-width:26px;height:26px;border-radius:50%;background:rgba(201,150,58,0.12);border:1px solid var(--border-gold);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--gold);flex-shrink:0">${c.letter}</div>
+      <div><div style="font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">${c.title}</div><div style="font-size:13px;color:var(--text-dim);line-height:1.8">${c.text}</div></div>
+    </div>`).join('');
+  document.getElementById('recon-txt').textContent = SOLUTION.reconstruction;
+  document.getElementById('key-ev').innerHTML = SOLUTION.key_evidence.map(e =>
+    `<div class="ev-item"><div class="dot" style="background:var(--gold);flex-shrink:0"></div><span>${e}</span></div>`).join('');
+  document.getElementById('inn-notes').innerHTML = SOLUTION.innocence_notes.map(n =>
+    `<div class="inn-item"><div class="dot" style="background:var(--text-dim);flex-shrink:0"></div><span>${n}</span></div>`).join('');
+}
+</script>
+</body>
+</html>
